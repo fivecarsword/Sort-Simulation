@@ -8,22 +8,36 @@ using System.Drawing;
 namespace Sort_Simulation {
     public struct SortState {
         public SortStateType type;
+        public List<ArrayState> arrayStates;
+
+        public SortState(SortStateType type, List<ArrayState> arrayStates) {
+            this.type = type;
+            this.arrayStates = arrayStates;
+        }
+    }
+
+    public struct ArrayState {
+        public int[] array;
+        public int offset;
         public List<SpecialStateValue> specialStateValues;
 
-        public SortState(SortStateType type, List<SpecialStateValue> specialStateValues = null) {
-            this.type = type;
+        public ArrayState(int[] array, int offset, List<SpecialStateValue> specialStateValues = null) {
+            this.array = array;
+            this.offset = offset;
             this.specialStateValues = specialStateValues;
+
+            if (specialStateValues == null) {
+                this.specialStateValues = new List<SpecialStateValue>();
+            }
         }
     }
 
     public struct SpecialStateValue {
         public int index;
-        public int value;
         public Color color;
 
-        public SpecialStateValue(int index, int value, Color color) {
+        public SpecialStateValue(int index, Color color) {
             this.index = index;
-            this.value = value;
             this.color = color;
         }
     }
