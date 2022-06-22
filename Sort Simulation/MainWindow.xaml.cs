@@ -30,6 +30,9 @@ namespace Sort_Simulation {
         int[] arr = { 0 };
         IEnumerator<SortState> sort;
 
+        const int maxArrayCount = 1000000;
+        int arrayCount = 10;
+
         int swapCount = 0;
         int compareCount = 0;
 
@@ -51,27 +54,67 @@ namespace Sort_Simulation {
             }
         }
 
+        int tickCountPerSec;
+        const int maxTickCountPerSec = 1000000;
+
+        double tickDelay;
+        double tickTime;
+
+        int TickCountPerSec {
+            get => tickCountPerSec;
+            set {
+                tickCountPerSec = value;
+
+                tickDelay = 65.0 / tickCountPerSec;
+            }
+        }
+
+        const int ImageMaxSize = 1000;
+
         DispatcherTimer timer = new DispatcherTimer();
 
         public MainWindow() {
-            arr = new int[10];
-            for (int i = 0; i < arr.Length; i++) {
-                arr[i] = i + 1;
-            }
+            ChangeArrayCount(arrayCount);
 
             Shuffle(arr);
 
+            TickCountPerSec = 10;
+
             timer.Interval = TimeSpan.FromMilliseconds(10);
-            timer.Tick += (sender, args) => {
-                Step();
-            };
+            timer.Tick += Tick;
 
             InitializeComponent();
+
+            stepPerSec.Text = TickCountPerSec.ToString();
+            arrayLength.Text = arrayCount.ToString();
 
             Draw(new SortState(SortStateType.None, new List<ArrayState> { new ArrayState(arr, 0) }));
         }
 
+        private void Tick(object sender, EventArgs e) {
+            if (tickDelay == 0) {
+                return;
+            }
+
+            tickTime += 1;
+
+            SortState? state = null;
+
+            while (tickTime > tickDelay) {
+                tickTime -= tickDelay;
+                state = Step();
+            }
+
+            if (state != null) {
+                Draw(state.Value);
+            }
+        }
+
         void ChangeArrayCount(int n) {
+            if (arr.Length == n) {
+                return;
+            }
+
             arr = new int[n];
             for (int i = 0; i < arr.Length; i++) {
                 arr[i] = i + 1;
@@ -79,29 +122,52 @@ namespace Sort_Simulation {
         }
 
         void Shuffle(int[] arr) {
-            List<int> copy = arr.ToList();
-
             for (int i = 0; i < arr.Length; i++) {
-                int index = random.Next(copy.Count);
-                arr[i] = copy[index];
-                copy.RemoveAt(index);
+                int index = random.Next(arr.Length);
+
+                int temp = arr[index];
+                arr[index] = arr[i];
+                arr[i] = temp;
             }
         }
 
         void Draw(SortState state) {
-            Bitmap bitmap = new Bitmap(arr.Length, arr.Length);
+            int size = arr.Length;
+            double arrayToBitmap = 1;
+            double bitmapToArray = 1;
+
+            if (size > ImageMaxSize) {
+                arrayToBitmap = (double)ImageMaxSize / size;
+                bitmapToArray = (double)size / ImageMaxSize;
+                size = ImageMaxSize;
+            }
+
+            Bitmap bitmap = new Bitmap(size, size, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
 
             using (Graphics gr = Graphics.FromImage(bitmap)) {
+                gr.Clear(Color.Black);
+
                 foreach (ArrayState arrayState in state.arrayStates) {
                     int[] array = arrayState.array;
                     int offset = arrayState.offset;
 
-                    for (int i = 0; i < array.Length; i++) {
-                        gr.DrawLine(new Pen(Color.White), new Point(i + offset, arr.Length - array[i]), new Point(i + offset, arr.Length));
+                    for (int i = 0; i < size; i++) {
+                        int index = (int)(i * bitmapToArray) - offset;
+
+                        if (index < 0 || index >= array.Length) {
+                            continue;
+                        }
+
+                        Point point1 = new Point(i, (int)((arr.Length - array[index]) * arrayToBitmap));
+                        Point point2 = new Point(i, size);
+                        gr.DrawLine(new Pen(Color.White), point1, point2);
                     }
 
                     foreach (SpecialStateValue value in arrayState.specialStateValues) {
-                        gr.DrawLine(new Pen(value.color), new Point(value.index + offset, arr.Length - array[value.index]), new Point(value.index + offset, arr.Length));
+                        int x = (int)((value.index + offset) * arrayToBitmap);
+                        Point point1 = new Point(x, (int)((arr.Length - array[value.index]) * arrayToBitmap));
+                        Point point2 = new Point(x, size);
+                        gr.DrawLine(new Pen(value.color), point1, point2);
                     }
                 }
             }
@@ -126,6 +192,12 @@ namespace Sort_Simulation {
                 case 4:
                     sort = Sort.HeapSort(arr).GetEnumerator();
                     break;
+                case 5:
+                    sort = Sort.QuickSort(arr).GetEnumerator();
+                    break;
+                case 6:
+                    sort = Sort.ShellSort(arr).GetEnumerator();
+                    break;
                 default:
                     return;
             }
@@ -138,10 +210,8 @@ namespace Sort_Simulation {
             Draw(sort.Current);
         }
 
-        void Step() {
+        SortState Step() {
             if (sort.MoveNext()) {
-                Draw(sort.Current);
-
                 switch (sort.Current.type) {
                     case SortStateType.Swap:
                         SwapCount++;
@@ -158,11 +228,14 @@ namespace Sort_Simulation {
                 startPause.IsEnabled = false;
                 Pause();
             }
+
+            return sort.Current;
         }
 
         private void Next(object sender, RoutedEventArgs e) {
             Pause();
-            Step();
+            SortState state = Step();
+            Draw(state);
         }
 
         private void Reset(object sender, RoutedEventArgs e) {
@@ -214,6 +287,47 @@ namespace Sort_Simulation {
                 Pause();
             } else {
                 Start();
+            }
+        }
+
+        private void stepPerSec_TextChanged(object sender, TextChangedEventArgs e) {
+            if (stepPerSec.Text.Length == 0) {
+                stepPerSec.Text = "1";
+                stepPerSec.CaretIndex = 1;
+            }
+            try {
+                TickCountPerSec = int.Parse(stepPerSec.Text);
+                if (TickCountPerSec > maxTickCountPerSec) {
+                    TickCountPerSec = maxTickCountPerSec;
+                    stepPerSec.Text = maxTickCountPerSec.ToString();
+                    stepPerSec.CaretIndex = stepPerSec.Text.Length;
+                }
+            } catch {
+                int index = stepPerSec.CaretIndex - 1;
+
+                stepPerSec.Text = TickCountPerSec.ToString();
+
+                stepPerSec.CaretIndex = index;
+            }
+        }
+
+        private void arrayLength_TextChanged(object sender, TextChangedEventArgs e) {
+            if (arrayLength.Text.Length == 0) {
+                arrayLength.Text = "1";
+                arrayLength.CaretIndex = 1;
+            }
+            try {
+                arrayCount = int.Parse(arrayLength.Text);
+                if (arrayCount > maxArrayCount) {
+                    arrayLength.Text = maxArrayCount.ToString();
+                    arrayLength.CaretIndex = arrayLength.Text.Length;
+                }
+            } catch {
+                int index = arrayLength.CaretIndex - 1;
+
+                arrayLength.Text = arrayCount.ToString();
+
+                arrayLength.CaretIndex = index;
             }
         }
     }

@@ -310,6 +310,7 @@ namespace Sort_Simulation {
             temp.CopyTo(arr, start);
         }
 
+        // 힙 정렬 함수
         public static IEnumerable<SortState> HeapSort(int[] arr) {
             arr = (int[])arr.Clone();
 
@@ -423,6 +424,177 @@ namespace Sort_Simulation {
                         continue;
                     }
 
+                    break;
+                }
+            }
+
+            // 정렬 종료을 알리기 위한 반환
+            yield return new SortState(SortStateType.Sorted, new List<ArrayState> { new ArrayState(arr, 0) });
+        }
+
+        // 퀵 정렬 함수
+        public static IEnumerable<SortState> QuickSort(int[] arr) {
+            arr = (int[])arr.Clone();
+
+            // 정렬 시작을 알리기 위한 반환
+            yield return new SortState(SortStateType.Start, new List<ArrayState> { new ArrayState(arr, 0) });
+
+            foreach (SortState state in Quick(arr, 0, arr.Length - 1)) {
+                yield return state;
+            }
+
+            // 정렬 종료을 알리기 위한 반환
+            yield return new SortState(SortStateType.Sorted, new List<ArrayState> { new ArrayState(arr, 0) });
+        }
+
+        // 퀵 정렬 재귀 진행을 위한 함수
+        private static IEnumerable<SortState> Quick(int[] arr, int left, int right) {
+            int i = left;
+            int j = right;
+            int pivot = arr[(left + right) / 2];
+
+            while (i <= j) {
+
+                // 비교 상태를 보여주기 위한 반환
+                yield return new SortState(SortStateType.Compare, new List<ArrayState> {
+                        new ArrayState(
+                            arr,
+                            0,
+                            new List<SpecialStateValue> {
+                                new SpecialStateValue(j, Color.Orange),
+                                new SpecialStateValue(i, Color.Red),
+                            }
+                        )
+                    });
+
+                while (arr[i] < pivot) {
+                    i++;
+
+                    // 비교 상태를 보여주기 위한 반환
+                    yield return new SortState(SortStateType.Compare, new List<ArrayState> {
+                        new ArrayState(
+                            arr,
+                            0,
+                            new List<SpecialStateValue> {
+                                new SpecialStateValue(j, Color.Orange),
+                                new SpecialStateValue(i, Color.Red),
+                            }
+                        )
+                    });
+                }
+
+                // 비교 상태를 보여주기 위한 반환
+                yield return new SortState(SortStateType.Compare, new List<ArrayState> {
+                        new ArrayState(
+                            arr,
+                            0,
+                            new List<SpecialStateValue> {
+                                new SpecialStateValue(i, Color.Orange),
+                                new SpecialStateValue(j, Color.Red),
+                            }
+                        )
+                    });
+
+                while (arr[j] > pivot) {
+                    j--;
+
+                    // 비교 상태를 보여주기 위한 반환
+                    yield return new SortState(SortStateType.Compare, new List<ArrayState> {
+                        new ArrayState(
+                            arr,
+                            0,
+                            new List<SpecialStateValue> {
+                                new SpecialStateValue(i, Color.Orange),
+                                new SpecialStateValue(j, Color.Red),
+                            }
+                        )
+                    });
+                }
+
+                if (i <= j) {
+                    Swap(ref arr[i], ref arr[j]);
+
+                    // 교환 상태를 보여주기 위한 반환
+                    yield return new SortState(SortStateType.Swap, new List<ArrayState> {
+                        new ArrayState(
+                            arr,
+                            0,
+                            new List<SpecialStateValue> {
+                                new SpecialStateValue(i, Color.Red),
+                                new SpecialStateValue(j, Color.Red)
+                            }
+                        )
+                    });
+
+                    i++;
+                    j--;
+                }
+            }
+
+            if (left < j) {
+                foreach (SortState state in Quick(arr, left, j)) {
+                    yield return state;
+                }
+            }
+
+            if (i < right) {
+                foreach (SortState state in Quick(arr, i, right)) {
+                    yield return state;
+                }
+            }
+        }
+
+        // 셸 정렬 함수
+        public static IEnumerable<SortState> ShellSort(int[] arr) {
+            arr = (int[])arr.Clone();
+
+            // 정렬 시작을 알리기 위한 반환
+            yield return new SortState(SortStateType.Start, new List<ArrayState> { new ArrayState(arr, 0) });
+
+            // 간격 마다 반복
+            for (int gap = arr.Length / 3 + 1; gap >= 1; gap = gap / 3 + 1) {
+
+                // 부분 리스트들 삽입 정렬
+                for (int i = 0; i < gap; i++) {
+
+                    // 삽입 정렬 진행
+                    for (int j = i + gap; j < arr.Length; j += gap) {
+                        for (int k = j; k - gap >= 0; k -= gap) {
+
+                            // 비교 상태를 보여주기 위한 반환
+                            yield return new SortState(SortStateType.Compare, new List<ArrayState> {
+                                new ArrayState(
+                                    arr,
+                                    0,
+                                    new List<SpecialStateValue> {
+                                        new SpecialStateValue(k - gap, Color.Red),
+                                        new SpecialStateValue(k, Color.Red),
+                                    }
+                                )
+                            });
+
+                            if (arr[k - gap] > arr[k]) {
+                                Swap(ref arr[k - gap], ref arr[k]);
+
+                                // 교환 상태를 보여주기 위한 반환
+                                yield return new SortState(SortStateType.Swap, new List<ArrayState> {
+                                    new ArrayState(
+                                        arr,
+                                        0,
+                                        new List<SpecialStateValue> {
+                                            new SpecialStateValue(k - gap, Color.Red),
+                                            new SpecialStateValue(k, Color.Red)
+                                        }
+                                    )
+                                });
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (gap == 1) {
                     break;
                 }
             }
