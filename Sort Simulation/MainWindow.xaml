@@ -14,7 +14,7 @@
         </Canvas>
         <Button x:Name="next" Content="Next" HorizontalAlignment="Left" Margin="90,0,0,36" Width="75" Click="Next" VerticalAlignment="Bottom" IsEnabled="False"/>
         <Button x:Name="reset" Content="Reset" HorizontalAlignment="Left" Margin="250,0,0,36" VerticalAlignment="Bottom" Width="75" Click="Reset"/>
-        <ComboBox x:Name="sortTypeBox" HorizontalAlignment="Left" Margin="330,0,0,34" VerticalAlignment="Bottom" Width="120" SelectedIndex="0">
+        <ComboBox x:Name="sortTypeBox" HorizontalAlignment="Left" Margin="428,0,0,36" VerticalAlignment="Bottom" Width="120" SelectedIndex="0">
             <ComboBoxItem Content="Bubble"/>
             <ComboBoxItem Content="Selection"/>
             <ComboBoxItem Content="Insertion"/>
@@ -24,12 +24,14 @@
             <ComboBoxItem Content="Shell"/>
         </ComboBox>
         <TextBox x:Name="arrayLength" HorizontalAlignment="Left" Height="23" Margin="90,0,0,8" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="75" TextChanged="arrayLength_TextChanged"/>
-        <Label x:Name="swapCountLabel" Content="Swap : 0" HorizontalAlignment="Left" Margin="476,0,0,32" VerticalAlignment="Bottom" FontWeight="Bold" Foreground="White"/>
-        <Label x:Name="compareCountLabel" Content="Compare : 0" HorizontalAlignment="Left" Margin="455,0,0,8" VerticalAlignment="Bottom" FontWeight="Bold" Foreground="White"/>
+        <Label x:Name="swapCountLabel" Content="Swap : 0" HorizontalAlignment="Left" Margin="574,0,0,34" VerticalAlignment="Bottom" FontWeight="Bold" Foreground="White"/>
+        <Label x:Name="compareCountLabel" Content="Compare : 0" HorizontalAlignment="Left" Margin="553,0,0,8" VerticalAlignment="Bottom" FontWeight="Bold" Foreground="White"/>
         <Button x:Name="startPause" Content="Start" HorizontalAlignment="Left" Margin="170,0,0,36" VerticalAlignment="Bottom" Width="75" Click="StartPause" IsEnabled="False"/>
         <Label Content="Count : " HorizontalAlignment="Left" Margin="21,0,0,8" VerticalAlignment="Bottom" FontWeight="Bold" Foreground="White" Width="56"/>
-        <Label Content="Step Per Sec : " HorizontalAlignment="Left" Margin="200,0,0,8" VerticalAlignment="Bottom" FontWeight="Bold" Foreground="White"/>
-        <TextBox x:Name="stepPerSec" HorizontalAlignment="Left" Height="23" Margin="330,0,0,8" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="120" TextChanged="stepPerSec_TextChanged"/>
+        <Label Content="Step Per Sec : " HorizontalAlignment="Left" Margin="330,0,0,8" VerticalAlignment="Bottom" FontWeight="Bold" Foreground="White"/>
+        <TextBox x:Name="stepPerSec" HorizontalAlignment="Left" Height="23" Margin="428,0,0,10" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="120" TextChanged="stepPerSec_TextChanged"/>
+        <Button x:Name="shuffle" Content="Shuffle" HorizontalAlignment="Left" Margin="170,0,0,11" VerticalAlignment="Bottom" Width="75" Click="Shuffle"/>
+        <Button x:Name="load" Content="Load" HorizontalAlignment="Left" Margin="250,0,0,11" Width="75" VerticalAlignment="Bottom" Click="Load"/>
 
     </Grid>
 </Window>

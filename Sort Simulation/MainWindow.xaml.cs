@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -19,6 +20,7 @@ using Color = System.Drawing.Color;
 using Pen = System.Drawing.Pen;
 using Point = System.Drawing.Point;
 using Size = System.Windows.Size;
+using System.IO;
 
 namespace Sort_Simulation {
     /// <summary>
@@ -75,8 +77,6 @@ namespace Sort_Simulation {
 
         public MainWindow() {
             ChangeArrayCount(arrayCount);
-
-            Shuffle(arr);
 
             TickCountPerSec = 10;
 
@@ -205,6 +205,8 @@ namespace Sort_Simulation {
 
             next.IsEnabled = true;
             run.IsEnabled = false;
+            load.IsEnabled = false;
+            shuffle.IsEnabled = false;
             startPause.IsEnabled = true;
 
             Draw(sort.Current);
@@ -239,17 +241,45 @@ namespace Sort_Simulation {
         }
 
         private void Reset(object sender, RoutedEventArgs e) {
+            string fileName = (string)((ComboBoxItem)sortTypeBox.SelectedItem).Content + ".txt";
+
+            string result = $"{SwapCount}\n{CompareCount}";
+
+            File.WriteAllText(fileName, result);
+
             Pause();
 
             ChangeArrayCount(int.Parse(arrayLength.Text));
-            Shuffle(arr);
+
             run.IsEnabled = true;
+            load.IsEnabled = true;
+            shuffle.IsEnabled = true;
             next.IsEnabled = false;
             startPause.IsEnabled = false;
 
             SwapCount = 0;
             CompareCount = 0;
 
+            Draw(new SortState(SortStateType.None, new List<ArrayState> { new ArrayState(arr, 0) }));
+        }
+
+        private void Load(object sender, RoutedEventArgs e) {
+            OpenFileDialog open = new OpenFileDialog();
+            open.Filter = "Text File (*.txt;*.TXT)|*.txt;*.TXT";
+
+            if (open.ShowDialog() != true) {
+                return;
+            }
+
+            arr = File.ReadAllText(open.FileName).Split(' ').Select(int.Parse).ToArray();
+
+            arrayLength.Text = arr.Length.ToString();
+
+            Draw(new SortState(SortStateType.None, new List<ArrayState> { new ArrayState(arr, 0) }));
+        }
+
+        private void Shuffle(object sender, RoutedEventArgs e) {
+            Shuffle(arr);
             Draw(new SortState(SortStateType.None, new List<ArrayState> { new ArrayState(arr, 0) }));
         }
 
